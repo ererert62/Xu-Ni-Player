@@ -35,7 +35,7 @@
     .particles {
       position: fixed;
       inset: 0;
-      z-index: 1; /* Самый задний план */
+      z-index: 2; /* Слой 2 (поверх фонов, под текстом) */
       pointer-events: none;
       overflow: hidden;
     }
@@ -49,22 +49,22 @@
 
     /* Голубые ноты */
     .particles span.blue {
-      color: rgba(56, 189, 248, 0.18) !important;
+      color: rgba(56, 189, 248, 0.25) !important;
     }
 
     /* Желтые ноты */
     .particles span.yellow {
-      color: rgba(245, 158, 11, 0.18) !important;
+      color: rgba(245, 158, 11, 0.25) !important;
     }
 
     @keyframes floatUp {
       0% { transform: translateY(0) rotate(0deg) scale(0.8); opacity: 0; }
-      10% { opacity: 0.3; }
-      90% { opacity: 0.3; }
+      10% { opacity: 0.35; }
+      90% { opacity: 0.35; }
       100% { transform: translateY(-110vh) rotate(360deg) scale(1.3); opacity: 0; }
     }
 
-    /* Настройка 15 летающих нот */
+    /* Настройка 10 летающих нот */
     .particles span:nth-child(1) { left: 4%; animation-duration: 18s; font-size: 1.1rem; }
     .particles span:nth-child(2) { left: 12%; animation-duration: 25s; font-size: 1.5rem; animation-delay: 2s; }
     .particles span:nth-child(3) { left: 22%; animation-duration: 20s; font-size: 0.9rem; animation-delay: 1s; }
@@ -76,10 +76,15 @@
     .particles span:nth-child(9) { left: 82%; animation-duration: 26s; font-size: 0.8rem; animation-delay: 1s; }
     .particles span:nth-child(10) { left: 92%; animation-duration: 23s; font-size: 1.7rem; animation-delay: 7s; }
 
-    /* ГЛАВНЫЙ БЛОК (Z-INDEX: 3 ЧТОБЫ БЫТЬ ПОВЕРХ НОТ) */
-    .hero, .about, .web-player-section, .screenshots-section, .install, footer {
+    /* ГЛАВНЫЕ КОНТЕНТНЫЕ БЛОКИ (СЛОЙ 3 ПОВЕРХ ЛЕТАЮЩИХ НОТ) */
+    .hero-content, .grid-about, .web-player-container, .install-container, footer, .screenshots-section {
       position: relative;
-      z-index: 3;
+      z-index: 3 !important;
+    }
+
+    /* ФОНОВЫЕ ПОДЛОЖКИ (СЛОЙ 1 ПОД НОТАМИ) */
+    .hero-bg, .install-bg {
+      z-index: 1 !important;
     }
 
     .hero {
@@ -112,13 +117,13 @@
     /* Точечное позиционирование logo.gif точно на месте красной точки в Photoshop */
     .gif-overlay {
       position: absolute;
-      left: 14.7%; /* Позиция по горизонтали */
-      top: 31.4%;  /* Позиция по вертикали */
-      width: 9.9%; /* Масштабируемый размер гифки */
+      left: 26.7%; /* Позиция по горизонтали */
+      top: 327.4%;  /* Позиция по вертикали */
+      width: 27.9%; /* Масштабируемый размер гифки */
       height: auto;
       transform: translate(-50%, -50%);
       pointer-events: none;
-      filter: drop-shadow(0 0 10px var(--accent-glow));
+      filter: drop-shadow(0 0 15px var(--accent-glow));
     }
 
     .hero h1 {
