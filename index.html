@@ -700,12 +700,24 @@
     var webAudio = document.getElementById('webAudio');
     var isWebPlaying = false;
 
-    // Загрузка песен из Hugging Face на сайт
+    // Функция случайного перемешивания массива (Fisher-Yates Shuffle)
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    // Автоматическая подгрузка треклиста с перемешиванием
     async function loadWebPlaylist() {
       try {
         const response = await fetch(PLAYLIST_JSON);
         if (!response.ok) throw new Error();
-        webPlaylist = await response.json();
+        const data = await response.json();
+        
+        // Случайно перемешиваем песни перед отображением
+        shuffleArray(data);
+        webPlaylist = data;
         
         document.getElementById('webCount').textContent = webPlaylist.length + ' треков';
         
