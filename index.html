@@ -77,14 +77,20 @@
     .particles span:nth-child(10) { left: 92%; animation-duration: 23s; font-size: 1.7rem; animation-delay: 7s; }
 
     /* ГЛАВНЫЕ КОНТЕНТНЫЕ БЛОКИ (СЛОЙ 3 ПОВЕРХ ЛЕТАЮЩИХ НОТ) */
-    .hero-content, .grid-about, .web-player-container, .install-container, footer, .screenshots-section {
-      position: relative;
-      z-index: 3 !important;
+    .hero-content, .grid-about, .web-player-container, .install-container, footer, .screenshots-section, .banner-container {
+    position: relative;
+    z-index: 3 !important;
     }
 
     /* ФОНОВЫЕ ПОДЛОЖКИ (СЛОЙ 1 ПОД НОТАМИ) */
+    hero, .about, .web-player-section, .screenshots-section, .install {
+    position: relative;
+    z-index: auto !important; 
+    }
+    
+    /* ФОНОВЫЕ ПОДЛОЖКИ (СЛОЙ 1 ПОД НОТАМИ) */
     .hero-bg, .install-bg {
-      z-index: 1 !important;
+        z-index: 1 !important;
     }
 
     .hero {
