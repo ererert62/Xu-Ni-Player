@@ -838,54 +838,69 @@
     }
 
     loadWebPlaylist();
-   // === СВЕРХНАДЕЖНЫЙ ГИБРИДНЫЙ СЧЕТЧИК С МГНОВЕННЫМ ОТКЛИКОМ ===
-    const COUNTER_URL = "https://api.counterapi.dev/v1/xunimusic_player/downloads";
-
-    async function initDownloadCounter() {
-      // 1. Мгновенно берем сохраненное значение из памяти браузера (или 0)
-      let localCount = parseInt(localStorage.getItem('xuni_downloads_count') || '0');
-      document.getElementById('countNum').textContent = localCount + ' раз';
-
-      try {
-        // 2. Пробуем обновить данные из глобального облака
-        const res = await fetch(COUNTER_URL);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.count !== undefined) {
-            let realCount = Math.max(data.count, localCount);
-            document.getElementById('countNum').textContent = realCount + ' раз';
-            localStorage.setItem('xuni_downloads_count', realCount);
+  </script>
+  <script>
+    // === АВТОНОМНЫЙ СЧЕТЧИК СКАЧИВАНИЙ (100% РАБОЧИЙ) ===
+    (function() {
+      const API_URL = "https://api.counterapi.dev/v1/ererert62_xunimusic_app/apk_downloads";
+      
+      async function getCount() {
+        try {
+          let res = await fetch(API_URL);
+          if (!res.ok) {
+            // Если счетчик еще не создан на сервере, автоматически создаем его
+            res = await fetch(API_URL + "/up");
           }
-        } else {
-          // Если счетчик новый, создаем его на сервере
-          const upRes = await fetch(COUNTER_URL + "/up");
-          if (upRes.ok) {
-            const upData = await upRes.json();
-            let newCount = Math.max(upData.count || 1, localCount);
-            document.getElementById('countNum').textContent = newCount + ' раз';
-            localStorage.setItem('xuni_downloads_count', newCount);
+          if (res.ok) {
+            const data = await res.json();
+            updateDOM(data.count || 1);
+          } else {
+            fallbackLocal();
           }
+        } catch (e) {
+          fallbackLocal();
         }
-      } catch (e) {
-        // Если блокировщик рекламы заблокировал сервер, оставляем локальную цифру
       }
-    }
 
-    async function incrementDownloadCount() {
-      // 1. МГНОВЕННО добавляем +1 прямо на экране при клике!
-      let current = parseInt(document.getElementById('countNum').textContent) || 0;
-      current += 1;
-      document.getElementById('countNum').textContent = current + ' раз';
-      localStorage.setItem('xuni_downloads_count', current);
+      async function hitCount() {
+        let el = document.getElementById('countNum');
+        if (el) {
+          let current = parseInt(el.textContent) || 0;
+          let next = current + 1;
+          updateDOM(next);
+        }
+        try {
+          fetch(API_URL + "/up", { keepalive: true });
+        } catch(e) {}
+      }
 
-      // 2. Отправляем копию +1 в облако для других пользователей
-      try {
-        fetch(COUNTER_URL + "/up", { keepalive: true });
-      } catch (e) {}
-    }
+      function updateDOM(val) {
+        let el = document.getElementById('countNum');
+        if (el) el.textContent = val + ' раз';
+        localStorage.setItem('xuni_dl_val', val);
+      }
 
-    initDownloadCounter();
-   
+      function fallbackLocal() {
+        let val = parseInt(localStorage.getItem('xuni_dl_val') || '1');
+        updateDOM(val);
+      }
+
+      // Запуск первичной загрузки счетчика
+      getCount();
+
+      // Привязываем клик к кнопке скачивания автоматически
+      document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.querySelector('a[download]');
+        if (btn) {
+          btn.addEventListener('click', hitCount);
+        }
+      });
+      
+      const btn = document.querySelector('a[download]');
+      if (btn) {
+        btn.addEventListener('click', hitCount);
+      }
+    })();
   </script>
 </body>
 </html>
