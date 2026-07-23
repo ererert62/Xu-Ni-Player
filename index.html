@@ -838,18 +838,19 @@
     }
 
     loadWebPlaylist();
-   // === СЧЕТЧИК СКАЧИВАНИЙ APK В РЕАЛЬНОМ ВРЕМЕНИ (ТОЧНЫЕ ЦИФРЫ) ===
-    const COUNTER_URL = "https://api.counterapi.dev/v1/xuni-music-player-ererert62/apk_downloads";
+   // === СЧЕТЧИК СКАЧИВАНИЙ С ЗАЩИТОЙ ОТ ОТМЕНЫ СКАЧИВАНИЕМ (KEEPALIVE) ===
+    const API_BASE = "https://api.counterapi.dev/v1/xuni_music_player_ererert62/downloads";
 
     async function initDownloadCounter() {
       try {
-        const res = await fetch(COUNTER_URL);
+        let res = await fetch(API_BASE);
+        if (!res.ok) {
+          // Если счетчик еще не создан в базе — инициализируем его
+          res = await fetch(API_BASE + "/up", { keepalive: true });
+        }
         if (res.ok) {
           const data = await res.json();
           document.getElementById('countNum').textContent = (data.count || 0) + ' раз';
-        } else {
-          // При первом в жизни клике создаем счетчик
-          document.getElementById('countNum').textContent = '0 раз';
         }
       } catch (e) {
         document.getElementById('countNum').textContent = '0 раз';
@@ -858,7 +859,8 @@
 
     async function incrementDownloadCount() {
       try {
-        const res = await fetch(COUNTER_URL + "/up");
+        // Передаем { keepalive: true }, чтобы Chrome не отменял запрос при скачивании
+        const res = await fetch(API_BASE + "/up", { keepalive: true });
         if (res.ok) {
           const data = await res.json();
           document.getElementById('countNum').textContent = (data.count || 0) + ' раз';
