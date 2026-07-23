@@ -839,21 +839,26 @@
 
     loadWebPlaylist();
   </script>
-  <script>
-    // === АВТОНОМНЫЙ СЧЕТЧИК СКАЧИВАНИЙ (100% РАБОЧИЙ) ===
+<script>
+    // === АВТОНОМНЫЙ СЧЕТЧИК СКАЧИВАНИЙ (ИСПРАВЛЕННЫЙ СБРОС КЭША) ===
     (function() {
-      const API_URL = "https://api.counterapi.dev/v1/ererert62_xunimusic_app/apk_downloads";
-      
-      async function getCount() {
+      // Новые уникальные ключи, полностью сбрасывающие застрявший '0' в памяти
+      const NAMESPACE = "ererert62_xunimusic_official";
+      const KEY = "apk_downloads";
+      const GET_URL = `https://api.countapi.xyz/get/${NAMESPACE}/${KEY}`;
+      const HIT_URL = `https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`;
+
+      async function fetchCount() {
         try {
-          let res = await fetch(API_URL);
-          if (!res.ok) {
-            // Если счетчик еще не создан на сервере, автоматически создаем его
-            res = await fetch(API_URL + "/up");
+          let res = await fetch(GET_URL);
+          if (res.status === 404 || !res.ok) {
+            // Если счетчика еще нет на сервере, автоматически создаем его первым вызовом
+            res = await fetch(HIT_URL);
           }
           if (res.ok) {
             const data = await res.json();
-            updateDOM(data.count || 1);
+            const count = data.value || 1;
+            updateDOM(count);
           } else {
             fallbackLocal();
           }
@@ -862,44 +867,42 @@
         }
       }
 
-      async function hitCount() {
+      async function registerClick() {
+        // Мгновенно прибавляем +1 на экране при клике
         let el = document.getElementById('countNum');
         if (el) {
-          let current = parseInt(el.textContent) || 0;
-          let next = current + 1;
-          updateDOM(next);
+          let current = parseInt(el.textContent) || 1;
+          updateDOM(current + 1);
         }
         try {
-          fetch(API_URL + "/up", { keepalive: true });
+          fetch(HIT_URL, { keepalive: true });
         } catch(e) {}
       }
 
       function updateDOM(val) {
         let el = document.getElementById('countNum');
-        if (el) el.textContent = val + ' раз';
-        localStorage.setItem('xuni_dl_val', val);
+        // Защита: если значение 0 или меньше — показываем 1
+        let safeVal = (val && val > 0) ? val : 1;
+        if (el) el.textContent = safeVal + ' раз';
+        localStorage.setItem('xuni_real_dl_v3', safeVal);
       }
 
       function fallbackLocal() {
-        let val = parseInt(localStorage.getItem('xuni_dl_val') || '1');
-        updateDOM(val);
+        let saved = parseInt(localStorage.getItem('xuni_real_dl_v3') || '1');
+        updateDOM(saved);
       }
 
-      // Запуск первичной загрузки счетчика
-      getCount();
+      // Запуск проверки счетчика при открытии
+      fetchCount();
 
-      // Привязываем клик к кнопке скачивания автоматически
+      // Автоматическая привязка к кнопке скачивания
       document.addEventListener('DOMContentLoaded', function() {
         const btn = document.querySelector('a[download]');
-        if (btn) {
-          btn.addEventListener('click', hitCount);
-        }
+        if (btn) btn.addEventListener('click', registerClick);
       });
       
       const btn = document.querySelector('a[download]');
-      if (btn) {
-        btn.addEventListener('click', hitCount);
-      }
+      if (btn) btn.addEventListener('click', registerClick);
     })();
   </script>
 </body>
