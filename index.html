@@ -603,7 +603,7 @@
       <p>Музыкальный плеер с христианскими песнями для Android. Новые вышедшие песни автоматически добавляются в плейлист. Приятного прослушивания!</p>
       
       <div class="cta-row">
-        <a href="Xu%20Ni%20Music.apk" class="btn btn-primary" download onclick="incrementDownloadCount()">
+        <a href="https://github.com/ererert62/Xu-Ni-Player/releases/latest/download/Xu.Ni.Music.apk" class="btn btn-primary" download>
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
           </svg>
@@ -840,70 +840,29 @@
     loadWebPlaylist();
   </script>
 <script>
-    // === АВТОНОМНЫЙ СЧЕТЧИК СКАЧИВАНИЙ (ИСПРАВЛЕННЫЙ СБРОС КЭША) ===
-    (function() {
-      // Новые уникальные ключи, полностью сбрасывающие застрявший '0' в памяти
-      const NAMESPACE = "ererert62_xunimusic_official";
-      const KEY = "apk_downloads";
-      const GET_URL = `https://api.countapi.xyz/get/${NAMESPACE}/${KEY}`;
-      const HIT_URL = `https://api.countapi.xyz/hit/${NAMESPACE}/${KEY}`;
-
-      async function fetchCount() {
-        try {
-          let res = await fetch(GET_URL);
-          if (res.status === 404 || !res.ok) {
-            // Если счетчика еще нет на сервере, автоматически создаем его первым вызовом
-            res = await fetch(HIT_URL);
-          }
-          if (res.ok) {
-            const data = await res.json();
-            const count = data.value || 1;
-            updateDOM(count);
-          } else {
-            fallbackLocal();
-          }
-        } catch (e) {
-          fallbackLocal();
-        }
-      }
-
-      async function registerClick() {
-        // Мгновенно прибавляем +1 на экране при клике
-        let el = document.getElementById('countNum');
-        if (el) {
-          let current = parseInt(el.textContent) || 1;
-          updateDOM(current + 1);
-        }
-        try {
-          fetch(HIT_URL, { keepalive: true });
-        } catch(e) {}
-      }
-
-      function updateDOM(val) {
-        let el = document.getElementById('countNum');
-        // Защита: если значение 0 или меньше — показываем 1
-        let safeVal = (val && val > 0) ? val : 1;
-        if (el) el.textContent = safeVal + ' раз';
-        localStorage.setItem('xuni_real_dl_v3', safeVal);
-      }
-
-      function fallbackLocal() {
-        let saved = parseInt(localStorage.getItem('xuni_real_dl_v3') || '1');
-        updateDOM(saved);
-      }
-
-      // Запуск проверки счетчика при открытии
-      fetchCount();
-
-      // Автоматическая привязка к кнопке скачивания
-      document.addEventListener('DOMContentLoaded', function() {
-        const btn = document.querySelector('a[download]');
-        if (btn) btn.addEventListener('click', registerClick);
-      });
+    // === ОФИЦИАЛЬНЫЙ ГЛОБАЛЬНЫЙ СЧЕТЧИК GITHUB (ЕДИНАЯ СУММА ДЛЯ ВСЕХ БРАУЗЕРОВ) ===
+    async function getGlobalGitHubDownloads() {
+      const GITHUB_API = "https://api.github.com/repos/ererert62/Xu-Ni-Player/releases/latest";
       
-      const btn = document.querySelector('a[download]');
-      if (btn) btn.addEventListener('click', registerClick);
-    })();
+      try {
+        const response = await fetch(GITHUB_API);
+        if (response.ok) {
+          const data = await response.json();
+          // Берем суммарное количество скачиваний файла из официального релиза GitHub
+          if (data.assets && data.assets.length > 0) {
+            const totalDownloads = data.assets[0].download_count;
+            document.getElementById('countNum').textContent = totalDownloads + ' раз';
+            return;
+          }
+        }
+        document.getElementById('countNum').textContent = '0 раз';
+      } catch (e) {
+        document.getElementById('countNum').textContent = '0 раз';
+      }
+    }
+
+    // Запускаем получение официальной общей цифры
+    getGlobalGitHubDownloads();
   </script>
 </body>
 </html>
