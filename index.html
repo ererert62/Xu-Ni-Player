@@ -838,7 +838,7 @@
     }
 
     loadWebPlaylist();
-    // === СЧЕТЧИК СКАЧИВАНИЙ APK В РЕАЛЬНОМ ВРЕМЕНИ ===
+   // === СЧЕТЧИК СКАЧИВАНИЙ APK В РЕАЛЬНОМ ВРЕМЕНИ (ТОЧНЫЕ ЦИФРЫ) ===
     const COUNTER_URL = "https://api.counterapi.dev/v1/xuni-music-player-ererert62/apk_downloads";
 
     async function initDownloadCounter() {
@@ -848,12 +848,11 @@
           const data = await res.json();
           document.getElementById('countNum').textContent = (data.count || 0) + ' раз';
         } else {
-          // Если счетчик еще не создан на сервере, создаем его
-          await fetch(COUNTER_URL + "/up");
-          document.getElementById('countNum').textContent = '1 раз';
+          // При первом в жизни клике создаем счетчик
+          document.getElementById('countNum').textContent = '0 раз';
         }
       } catch (e) {
-        document.getElementById('countNum').textContent = '100+ раз';
+        document.getElementById('countNum').textContent = '0 раз';
       }
     }
 
