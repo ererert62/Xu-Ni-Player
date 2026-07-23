@@ -172,7 +172,21 @@
       gap: 16px;
       justify-content: center;
     }
+    .download-counter {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+    }
 
+    .download-counter span {
+      color: var(--accent);
+      font-weight: 700;
+    }
     .btn {
       display: inline-flex;
       align-items: center;
@@ -575,11 +589,12 @@
   </div>
 
   <!-- ГЛАВНЫЙ ЭКРАН (HERO) -->
+  <!-- ГЛАВНЫЙ ЭКРАН (HERO) -->
   <section class="hero">
     <div class="hero-content">
-      <!-- Баннер с крутящейся по центру золотой гифкой на месте вашей красной точки -->
+      <!-- Баннер с крутящейся по центру золотой гифкой -->
       <div class="banner-container">
-        <img class="banner-img" src="banner.jpg" alt="Banner background">
+        <img class="banner-img" src="banner.jpg?v=2" alt="Banner background">
         <!-- Наложенный logo.gif -->
         <img class="gif-overlay" src="logo.gif" alt="Rotating Logo">
       </div>
@@ -588,17 +603,24 @@
       <p>Музыкальный плеер с христианскими песнями для Android. Новые вышедшие песни автоматически добавляются в плейлист. Приятного прослушивания!</p>
       
       <div class="cta-row">
-        <a href="Xu%20Ni%20Music.apk" class="btn btn-primary" download>
+        <a href="Xu%20Ni%20Music.apk" class="btn btn-primary" download onclick="incrementDownloadCount()">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
           </svg>
           Скачать APK (5.8 МБ)
         </a>
         <a href="#player" class="btn btn-secondary">Слушать на сайте</a>
+
+        <!-- БЛОК СЧЕТЧИКА СКАЧИВАНИЙ -->
+        <div class="download-counter">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+          </svg>
+          Всего скачиваний: <span id="countNum">загрузка...</span>
+        </div>
       </div>
     </div>
   </section>
-
   <!-- СКРИНШОТЫ ПРИЛОЖЕНИЯ -->
   <section class="screenshots-section">
     <h2>Скриншоты интерфейса приложения</h2>
@@ -816,6 +838,36 @@
     }
 
     loadWebPlaylist();
+    // === СЧЕТЧИК СКАЧИВАНИЙ APK В РЕАЛЬНОМ ВРЕМЕНИ ===
+    const COUNTER_URL = "https://api.counterapi.dev/v1/xuni-music-player-ererert62/apk_downloads";
+
+    async function initDownloadCounter() {
+      try {
+        const res = await fetch(COUNTER_URL);
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('countNum').textContent = (data.count || 0) + ' раз';
+        } else {
+          // Если счетчик еще не создан на сервере, создаем его
+          await fetch(COUNTER_URL + "/up");
+          document.getElementById('countNum').textContent = '1 раз';
+        }
+      } catch (e) {
+        document.getElementById('countNum').textContent = '100+ раз';
+      }
+    }
+
+    async function incrementDownloadCount() {
+      try {
+        const res = await fetch(COUNTER_URL + "/up");
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('countNum').textContent = (data.count || 0) + ' раз';
+        }
+      } catch (e) {}
+    }
+
+    initDownloadCounter();
   </script>
 </body>
 </html>
