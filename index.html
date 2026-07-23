@@ -840,29 +840,57 @@
     loadWebPlaylist();
   </script>
 <script>
-    // === ОФИЦИАЛЬНЫЙ ГЛОБАЛЬНЫЙ СЧЕТЧИК GITHUB (ЕДИНАЯ СУММА ДЛЯ ВСЕХ БРАУЗЕРОВ) ===
-    async function getGlobalGitHubDownloads() {
+    // === ОФИЦИАЛЬНЫЙ СЧЕТЧИК GITHUB С МГНОВЕННЫМ ОТКЛИКОМ КЛИКА ===
+    (function() {
       const GITHUB_API = "https://api.github.com/repos/ererert62/Xu-Ni-Player/releases/latest";
-      
-      try {
-        const response = await fetch(GITHUB_API);
-        if (response.ok) {
-          const data = await response.json();
-          // Берем суммарное количество скачиваний файла из официального релиза GitHub
-          if (data.assets && data.assets.length > 0) {
-            const totalDownloads = data.assets[0].download_count;
-            document.getElementById('countNum').textContent = totalDownloads + ' раз';
-            return;
-          }
-        }
-        document.getElementById('countNum').textContent = '0 раз';
-      } catch (e) {
-        document.getElementById('countNum').textContent = '0 раз';
-      }
-    }
+      let baseGithubCount = 0;
 
-    // Запускаем получение официальной общей цифры
-    getGlobalGitHubDownloads();
+      async function fetchGitHubCount() {
+        try {
+          const response = await fetch(GITHUB_API);
+          if (response.ok) {
+            const data = await response.json();
+            if (data.assets && data.assets.length > 0) {
+              baseGithubCount = data.assets[0].download_count || 0;
+            }
+          }
+        } catch (e) {
+          baseGithubCount = 0;
+        }
+        renderTotal();
+      }
+
+      function renderTotal() {
+        let localClicks = parseInt(localStorage.getItem('xuni_user_clicks') || '0');
+        let total = baseGithubCount + localClicks;
+        let el = document.getElementById('countNum');
+        if (el) el.textContent = total + ' раз';
+      }
+
+      function onDownloadClick() {
+        // Мгновенный отклик +1 при клике
+        let localClicks = parseInt(localStorage.getItem('xuni_user_clicks') || '0');
+        localClicks += 1;
+        localStorage.setItem('xuni_user_clicks', localClicks);
+        renderTotal();
+      }
+
+      // 1. Запрашиваем официальные данные у GitHub
+      fetchGitHubCount();
+
+      // 2. Вешаем мгновенный отклик на кнопку скачивания
+      document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.querySelector('a[download]');
+        if (btn) {
+          btn.addEventListener('click', onDownloadClick);
+        }
+      });
+      
+      const btn = document.querySelector('a[download]');
+      if (btn) {
+        btn.addEventListener('click', onDownloadClick);
+      }
+    })();
   </script>
 </body>
 </html>
